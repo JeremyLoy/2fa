@@ -1,9 +1,10 @@
 import binascii
-import click
+import pickle
 from getpass import getpass
 from json import dumps
 from pathlib import Path
-import pickle
+
+import click
 import pyotp
 import pyperclip
 
@@ -107,8 +108,7 @@ def load_state():
 
 
 def print_all(json):
-    d = {service: pyotp.TOTP(secret).now()
-         for service, secret in data.items()}
+    d = {service: pyotp.TOTP(secret).now() for service, secret in data.items()}
 
     if json:
         print(dumps(d))
