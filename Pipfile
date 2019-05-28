@@ -4,10 +4,11 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+twofa = {editable = true,path = "."}
 
 [packages]
-pyotp = "==2.2.7"
 click = "==7.0"
+pyotp = "==2.2.7"
 pyperclip = "==1.7.0"
 
 [requires]

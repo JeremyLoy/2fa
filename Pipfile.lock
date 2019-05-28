@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8288f0864bd781b564112c78ada3e9c49713f86a4ba169c6bba4512a71197256"
+            "sha256": "4b9220fd423dc99ebc0285f1fca5e927017624bc9189abe486e910f2a57d6bd4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -40,5 +40,10 @@
             "version": "==1.7.0"
         }
     },
-    "develop": {}
+    "develop": {
+        "twofa": {
+            "editable": true,
+            "path": "."
+        }
+    }
 }
