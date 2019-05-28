@@ -1,9 +1,11 @@
+import binascii
 import click
+from getpass import getpass
 from json import dumps
+from pathlib import Path
+import pickle
 import pyotp
 import pyperclip
-import pickle
-from pathlib import Path
 
 FILE = Path.home().joinpath('.2fa')
 
@@ -34,16 +36,24 @@ def cli(ctx, json):
 
 @cli.command()
 @click.argument('service')
-@click.argument('secret')
-def add(service, secret):
+def add(service):
     """
     Add a service to this tool.
+
+    Prompts the user for the secret.
+    Rejects bad secrets.
 
     \f
     :param service: The service to add. i.e. github.
     :param secret:  The secret used to derive the OTP.
     """
-    # TODO validate key length
+
+    secret = getpass(prompt='Secret: ')
+    try:
+        pyotp.TOTP(secret).now()
+    except binascii.Error:
+        print(f'Bad secret key.')
+        return
     data[service] = secret
     print(f'{service} added!')
     save_state()
