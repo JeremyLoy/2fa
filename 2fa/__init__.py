@@ -49,9 +49,9 @@ def add(service, secret):
 @click.argument('service')
 def copy(service):
     """
-    Copy a TOTP to the clipboard.
+    Copy the current TOTP for SERVICE to the clipboard.
     \f
-    :param service:
+    :param service: The service to generate a OTP for.
     """
     try:
         otp = pyotp.TOTP(data[service]).now()
@@ -67,7 +67,7 @@ def remove(services):
     """
     Remove services from this tool.
     \f
-    :param services:
+    :param services: The service to remove.
     """
     for service in services:
         try:
