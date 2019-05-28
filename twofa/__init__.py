@@ -105,7 +105,7 @@ def print_all(json):
 
 
 def print_all_table(d):
-    left_column = max(10, len(max(d.keys())))  # the greater of the longest service name or 10.
+    left_column = len(max(d)) if d else 10 # the longest service name or 10
     right_column = 8  # max number of digits specified by RFC
 
     header = f'{"service":<{left_column}} | {"otp":<{right_column}}'
