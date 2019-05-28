@@ -24,7 +24,8 @@ def cli(ctx, json):
 
     See RFC 4226 (HOTP) 6238 (TOTP) for more info.
     \f
-    :param: ctx
+    :param ctx: the click context.
+    :param json: True if output should be JSON, False otherwise.
     """
     load_state()
     if ctx.invoked_subcommand is None:
@@ -70,7 +71,7 @@ def remove(services):
     """
     Remove services from this tool.
     \f
-    :param services: The service to remove.
+    :param services: The services to remove.
     """
     for service in services:
         try:
