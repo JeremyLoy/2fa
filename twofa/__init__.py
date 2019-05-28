@@ -13,7 +13,7 @@ data = {}
 
 
 @click.group(invoke_without_command=True, context_settings=CONTEXT_SETTINGS)
-@click.option('--json', is_flag=True)
+@click.option('--json', '-j', is_flag=True, help='Output all as JSON.')
 @click.pass_context
 def cli(ctx, json):
     """

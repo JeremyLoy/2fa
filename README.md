@@ -6,6 +6,7 @@ CLI for Time-Based OTP codes.
 twofa add github $SECRETKEY
 twofa copy github # copies OTP to clipboard
 twofa # lists all registered services and their current OTP
+twofa --json # same as above but in a machine readable format
 twofa remove github # removes the service
 ```
 
