@@ -1,4 +1,5 @@
 import click
+from json import dumps
 import pyotp
 import pyperclip
 import pickle
@@ -12,8 +13,9 @@ data = {}
 
 
 @click.group(invoke_without_command=True, context_settings=CONTEXT_SETTINGS)
+@click.option('--json', is_flag=True)
 @click.pass_context
-def cli(ctx):
+def cli(ctx, json):
     """
     Provides Time-Based One Time Passwords (TOTP) utilities.
 
@@ -25,7 +27,7 @@ def cli(ctx):
     """
     load_state()
     if ctx.invoked_subcommand is None:
-        list_all()
+        print_all(json)
 
 
 @cli.command()
@@ -92,18 +94,23 @@ def load_state():
         pass
 
 
-def list_all():
-    left_column = max(10, len(max(data.keys()))) # the greater of the longest service name or 10.
-    right_column = 8 # max number of digits specified by RFC
+def print_all(json):
+    d = {service: pyotp.TOTP(secret).now()
+         for service, secret in data.items()}
+
+    if json:
+        print(dumps(d))
+    else:
+        print_all_table(d)
+
+
+def print_all_table(d):
+    left_column = max(10, len(max(d.keys())))  # the greater of the longest service name or 10.
+    right_column = 8  # max number of digits specified by RFC
 
     header = f'{"service":<{left_column}} | {"otp":<{right_column}}'
 
     print(header)
     print('-' * len(header))
-    for service, secret in data.items():
-        otp = pyotp.TOTP(secret).now()
+    for service, otp in d.items():
         print(f'{service:<{left_column}} | {otp:{right_column}}')
-
-
-if __name__ == '__main__':
-    cli()
