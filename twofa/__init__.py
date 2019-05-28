@@ -19,7 +19,8 @@ def cli(ctx, json):
     """
     Provides Time-Based One Time Passwords (TOTP) utilities.
 
-    If no arguments given, lists all configured services with their current TOTP.
+    If no arguments given, lists all configured services with their current
+    TOTP.
 
     See RFC 4226 (HOTP) 6238 (TOTP) for more info.
     \f
@@ -105,7 +106,7 @@ def print_all(json):
 
 
 def print_all_table(d):
-    left_column = len(max(d)) if d else 10 # the longest service name or 10
+    left_column = len(max(d)) if d else 10  # the longest service name or 10
     right_column = 8  # max number of digits specified by RFC
 
     header = f'{"service":<{left_column}} | {"otp":<{right_column}}'
