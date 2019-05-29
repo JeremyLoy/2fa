@@ -65,7 +65,8 @@ def add(name, interval):
     secret = getpass(prompt='Secret: ')
     service = Service(name, secret)
 
-    service.interval = interval or service.interval
+    if interval:
+        service.interval = interval
 
     try:
         service.now()
@@ -146,7 +147,7 @@ def table(services: Dict[str, str]) -> str:
     :return: the table representation of d as a string
     """
     # the longest service name or 10
-    left_column = max(*map(len, services), 10)
+    left_column = max([10, *map(len, services)])
     right_column = 8  # max number of digits specified by RFC
 
     header = f'{"service":<{left_column}} | {"otp":<{right_column}}'
