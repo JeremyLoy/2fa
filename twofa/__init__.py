@@ -1,8 +1,10 @@
 import binascii
 import pickle
+from dataclasses import dataclass
 from getpass import getpass
 from json import dumps
 from pathlib import Path
+from typing import Dict
 
 import click
 import pyotp
@@ -12,7 +14,18 @@ FILE = Path.home().joinpath('.2fa')
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
-data = {}
+
+@dataclass
+class Service:
+    name: str
+    secret: str
+    interval: int = 30
+
+    def now(self):
+        return pyotp.TOTP(self.secret, interval=self.interval).now()
+
+
+_services: Dict[str, Service] = {}
 
 
 @click.group(invoke_without_command=True, context_settings=CONTEXT_SETTINGS)
@@ -36,8 +49,9 @@ def cli(ctx, json):
 
 
 @cli.command()
-@click.argument('service')
-def add(service):
+@click.argument('name', metavar='SERVICE')
+@click.option('--interval', '-i', type=int)
+def add(name, interval):
     """
     Add a service to this tool.
 
@@ -45,35 +59,39 @@ def add(service):
     Rejects bad secrets.
 
     \f
-    :param service: The service to add. i.e. github.
-    :param secret:  The secret used to derive the OTP.
+    :param name: The service to add. i.e. github.
+    :param interval: The lifetime of an OTP.
     """
-
     secret = getpass(prompt='Secret: ')
+    service = Service(name, secret)
+
+    service.interval = interval or service.interval
+
     try:
-        pyotp.TOTP(secret).now()
+        service.now()
     except binascii.Error:
-        print(f'Bad secret key.')
+        print('Bad secret key.')
         return
-    data[service] = secret
-    print(f'{service} added!')
+
+    _services[service.name] = service
+    print(f'{service.name} added!')
     save_state()
 
 
 @cli.command()
-@click.argument('service')
-def copy(service):
+@click.argument('name', metavar='SERVICE')
+def copy(name):
     """
     Copy the current TOTP for SERVICE to the clipboard.
     \f
-    :param service: The service to generate a OTP for.
+    :param name: The service to generate a OTP for.
     """
     try:
-        otp = pyotp.TOTP(data[service]).now()
-        pyperclip.copy(otp)
-        print(f'{service} was copied to your clipboard!')
+        service = _services[name]
+        pyperclip.copy(service.now())
+        print(f'{service.name} was copied to your clipboard!')
     except KeyError:
-        print(f'{service} does not exist')
+        print(f'{service.name} does not exist')
 
 
 @cli.command()
@@ -86,7 +104,7 @@ def remove(services):
     """
     for service in services:
         try:
-            data.pop(service)
+            _services.pop(service)
             print(f'{service} removed!')
         except KeyError:
             print(f'{service} does not exist')
@@ -95,34 +113,49 @@ def remove(services):
 
 def save_state():
     with open(FILE, 'wb') as f:
-        pickle.dump(data, f)
+        pickle.dump(_services, f)
 
 
 def load_state():
     try:
         with open(FILE, 'rb') as f:
-            global data
-            data = pickle.load(f)
+            global _services
+            _services = pickle.load(f)
     except FileNotFoundError:
         pass
 
 
-def print_all(json):
-    d = {service: pyotp.TOTP(secret).now() for service, secret in data.items()}
+def print_all(json: bool):
+    """
+    Print all services in JSON format or as a table.
+    :param json: True if printing as JSON format
+    """
+    services = {name: service.now() for name, service in _services.items()}
 
     if json:
-        print(dumps(d))
+        print(dumps(services))
     else:
-        print_all_table(d)
+        print(table(services))
 
 
-def print_all_table(d):
-    left_column = len(max(d)) if d else 10  # the longest service name or 10
+def table(services: Dict[str, str]) -> str:
+    """
+    Collect all services and their current otp as a table.
+     
+    :param services: Dictionary of service name to otp
+    :return: the table representation of d as a string
+    """
+    # the longest service name or 10
+    left_column = max(*map(len, services), 10)
     right_column = 8  # max number of digits specified by RFC
 
     header = f'{"service":<{left_column}} | {"otp":<{right_column}}'
 
-    print(header)
-    print('-' * len(header))
-    for service, otp in d.items():
-        print(f'{service:<{left_column}} | {otp:{right_column}}')
+    divider = '-' * len(header)
+
+    body = [
+        f'{service:<{left_column}} | {otp:{right_column}}'
+        for service, otp in services.items()
+    ]
+
+    return '\n'.join([header, divider, *body])
