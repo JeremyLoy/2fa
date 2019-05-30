@@ -17,5 +17,5 @@ pyperclip = "==1.7.0"
 python_version = "3.7"
 
 [scripts]
-imports = "isort -y"
-format = "black --skip-string-normalization ."
+imports = "isort --apply"
+format = "black ."

@@ -10,9 +10,9 @@ import click
 import pyotp
 import pyperclip
 
-FILE = Path.home().joinpath('.2fa')
+FILE = Path.home().joinpath(".2fa")
 
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 @dataclass
@@ -29,7 +29,7 @@ _services: Dict[str, Service] = {}
 
 
 @click.group(invoke_without_command=True, context_settings=CONTEXT_SETTINGS)
-@click.option('--json', '-j', is_flag=True, help='Output all as JSON.')
+@click.option("--json", "-j", is_flag=True, help="Output all as JSON.")
 @click.pass_context
 def cli(ctx, json):
     """
@@ -49,8 +49,8 @@ def cli(ctx, json):
 
 
 @cli.command()
-@click.argument('name', metavar='SERVICE')
-@click.option('--interval', '-i', type=int)
+@click.argument("name", metavar="SERVICE")
+@click.option("--interval", "-i", type=int)
 def add(name, interval):
     """
     Add a service to this tool.
@@ -62,7 +62,7 @@ def add(name, interval):
     :param name: The service to add. i.e. github.
     :param interval: The lifetime of an OTP.
     """
-    secret = getpass(prompt='Secret: ')
+    secret = getpass(prompt="Secret: ")
     service = Service(name, secret)
 
     if interval:
@@ -71,16 +71,16 @@ def add(name, interval):
     try:
         service.now()
     except binascii.Error:
-        print('Bad secret key.')
+        print("Bad secret key.")
         return
 
     _services[service.name] = service
-    print(f'{service.name} added!')
+    print(f"{service.name} added!")
     save_state()
 
 
 @cli.command()
-@click.argument('name', metavar='SERVICE')
+@click.argument("name", metavar="SERVICE")
 def copy(name):
     """
     Copy the current TOTP for SERVICE to the clipboard.
@@ -90,13 +90,13 @@ def copy(name):
     try:
         service = _services[name]
         pyperclip.copy(service.now())
-        print(f'{service.name} was copied to your clipboard!')
+        print(f"{service.name} was copied to your clipboard!")
     except KeyError:
-        print(f'{service.name} does not exist')
+        print(f"{service.name} does not exist")
 
 
 @cli.command()
-@click.argument('services', nargs=-1)
+@click.argument("services", nargs=-1)
 def remove(services):
     """
     Remove services from this tool.
@@ -106,20 +106,20 @@ def remove(services):
     for service in services:
         try:
             _services.pop(service)
-            print(f'{service} removed!')
+            print(f"{service} removed!")
         except KeyError:
-            print(f'{service} does not exist')
+            print(f"{service} does not exist")
     save_state()
 
 
 def save_state():
-    with open(FILE, 'wb') as f:
+    with open(FILE, "wb") as f:
         pickle.dump(_services, f)
 
 
 def load_state():
     try:
-        with open(FILE, 'rb') as f:
+        with open(FILE, "rb") as f:
             global _services
             _services = pickle.load(f)
     except FileNotFoundError:
@@ -152,11 +152,11 @@ def table(services: Dict[str, str]) -> str:
 
     header = f'{"service":<{left_column}} | {"otp":<{right_column}}'
 
-    divider = '-' * len(header)
+    divider = "-" * len(header)
 
     body = [
-        f'{service:<{left_column}} | {otp:{right_column}}'
+        f"{service:<{left_column}} | {otp:{right_column}}"
         for service, otp in services.items()
     ]
 
-    return '\n'.join([header, divider, *body])
+    return "\n".join([header, divider, *body])
