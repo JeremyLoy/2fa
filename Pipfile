@@ -19,3 +19,4 @@ python_version = "3.7"
 [scripts]
 imports = "isort --apply"
 format = "black ."
+test = "python -m unittest"
