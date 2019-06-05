@@ -10,10 +10,10 @@ from click.testing import CliRunner
 import twofa
 
 
-@patch("pyotp.totp.datetime.datetime")
+@patch("pyotp.totp.datetime")
 @patch("twofa.FILE", Path(tempfile.mktemp()))
 def test_all(mock_datetime):
-    setattr(mock_datetime, "now", lambda: datetime.utcfromtimestamp(0))
+    mock_datetime.datetime.now.return_value = datetime.utcfromtimestamp(0)
 
     service = "google.com"
     totp_epoch = "149389"
