@@ -1,7 +1,6 @@
 import binascii
 import pickle
 from dataclasses import dataclass
-from getpass import getpass
 from json import dumps
 from pathlib import Path
 from typing import Dict
@@ -62,7 +61,7 @@ def add(name, interval):
     :param name: The service to add. i.e. github.
     :param interval: The lifetime of an OTP.
     """
-    secret = getpass(prompt="Secret: ")
+    secret = click.prompt("Secret", hide_input=True)
     service = Service(name, secret)
 
     if interval:
@@ -71,11 +70,11 @@ def add(name, interval):
     try:
         service.now()
     except binascii.Error:
-        print("Bad secret key.")
+        click.echo("Bad secret key.")
         return
 
     _services[service.name] = service
-    print(f"{service.name} added!")
+    click.echo(f"{service.name} added!")
     save_state()
 
 
@@ -90,9 +89,9 @@ def copy(name):
     try:
         service = _services[name]
         pyperclip.copy(service.now())
-        print(f"{service.name} was copied to your clipboard!")
+        click.echo(f"{service.name} was copied to your clipboard!")
     except KeyError:
-        print(f"{service.name} does not exist")
+        click.echo(f"{service.name} does not exist")
 
 
 @cli.command()
@@ -106,9 +105,9 @@ def remove(services):
     for service in services:
         try:
             _services.pop(service)
-            print(f"{service} removed!")
+            click.echo(f"{service} removed!")
         except KeyError:
-            print(f"{service} does not exist")
+            click.echo(f"{service} does not exist")
     save_state()
 
 
@@ -128,15 +127,15 @@ def load_state():
 
 def print_all(json: bool):
     """
-    Print all services in JSON format or as a table.
-    :param json: True if printing as JSON format
+    click.echo all services in JSON format or as a table.
+    :param json: True if click.echoing as JSON format
     """
     services = {name: service.now() for name, service in _services.items()}
 
     if json:
-        print(dumps(services))
+        click.echo(dumps(services))
     else:
-        print(table(services))
+        click.echo(table(services))
 
 
 def table(services: Dict[str, str]) -> str:
